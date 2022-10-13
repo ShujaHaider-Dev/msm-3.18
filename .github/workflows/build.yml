@@ -1,0 +1,31 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Update APT sources
+      run: sudo apt update
+    
+    - name: Install dependencies
+      run: sudo apt install git bc bison flex libssl-dev make crossbuild-essential-armhf
+      
+    - name: Build Linux 🐧
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: mkdir Output && make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- O=Output msm8909_defconfig zImage dtbs
+      
+    - uses: actions/upload-artifact@v3
+      with:
+       name: Upload built directory
+       path: ${{ github.workspace }}/Output/arch/arm/*
+       
